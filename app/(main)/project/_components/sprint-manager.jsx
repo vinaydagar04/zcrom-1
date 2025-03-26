@@ -1,5 +1,6 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -8,12 +9,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format, isAfter, isBefore, formatDistanceToNow } from "date-fns";
-import React, { useState } from "react";
-import { BarLoader } from "react-spinners";
+import { Badge } from "@/components/ui/badge";
 
-const SprintManager = ({ sprint, setSprint, sprints, projectId }) => {
+import { BarLoader } from "react-spinners";
+import { formatDistanceToNow, isAfter, isBefore, format } from "date-fns";
+
+import useFetch from "@/hooks/use-fetch";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { updateSprintStatus } from "@/actions/sprints";
+
+export default function SprintManager({
+  sprint,
+  setSprint,
+  sprints,
+  projectId,
+}) {
   const [status, setStatus] = useState(sprint.status);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const {
+    fn: updateStatus,
+    loading,
+    error,
+    data: updatedStatus,
+  } = useFetch(updateSprintStatus);
+
   const startDate = new Date(sprint.startDate);
   const endDate = new Date(sprint.endDate);
   const now = new Date();
@@ -23,12 +45,19 @@ const SprintManager = ({ sprint, setSprint, sprints, projectId }) => {
 
   const canEnd = status === "ACTIVE";
 
-  const handleSprintChange = (value) => {
-    const selectedSprint = sprints.find((s) => s.id === value);
-    setSprint(selectedSprint);
-    setStatus(selectedSprint.status);
-    // router.replace(`/project/${projectId}`, undefined, { shallow: true });
+  const handleStatusChange = async (newStatus) => {
+    updateStatus(sprint.id, newStatus);
   };
+
+  useEffect(() => {
+    if (updatedStatus && updatedStatus.success) {
+      setStatus(updatedStatus.sprint.status);
+      setSprint({
+        ...sprint,
+        status: updatedStatus.sprint.status,
+      });
+    }
+  }, [updatedStatus, loading]);
 
   const getStatusText = () => {
     if (status === "COMPLETED") {
@@ -40,7 +69,27 @@ const SprintManager = ({ sprint, setSprint, sprints, projectId }) => {
     if (status === "PLANNED" && isBefore(now, startDate)) {
       return `Starts in ${formatDistanceToNow(startDate)}`;
     }
+    return null;
   };
+
+  useEffect(() => {
+    const sprintId = searchParams.get("sprint");
+    if (sprintId && sprintId !== sprint.id) {
+      const selectedSprint = sprints.find((s) => s.id === sprintId);
+      if (selectedSprint) {
+        setSprint(selectedSprint);
+        setStatus(selectedSprint.status);
+      }
+    }
+  }, [searchParams, sprints]);
+
+  const handleSprintChange = (value) => {
+    const selectedSprint = sprints.find((s) => s.id === value);
+    setSprint(selectedSprint);
+    setStatus(selectedSprint.status);
+    router.replace(`/project/${projectId}`, undefined, { shallow: true });
+  };
+
   return (
     <>
       <div className="flex justify-between items-center gap-4">
@@ -60,8 +109,8 @@ const SprintManager = ({ sprint, setSprint, sprints, projectId }) => {
 
         {canStart && (
           <Button
-            // onClick={() => handleStatusChange("ACTIVE")}
-            // disabled={loading}
+            onClick={() => handleStatusChange("ACTIVE")}
+            disabled={loading}
             className="bg-green-900 text-white"
           >
             Start Sprint
@@ -69,20 +118,20 @@ const SprintManager = ({ sprint, setSprint, sprints, projectId }) => {
         )}
         {canEnd && (
           <Button
-            // onClick={() => handleStatusChange("COMPLETED")}
-            // disabled={loading}
+            onClick={() => handleStatusChange("COMPLETED")}
+            disabled={loading}
             variant="destructive"
           >
             End Sprint
           </Button>
         )}
       </div>
-      {/* {loading && <BarLoader width={"100%"} className="mt-2" color="#36d7b7" />} */}
+      {loading && <BarLoader width={"100%"} className="mt-2" color="#36d7b7" />}
       {getStatusText() && (
-        <Badge className="mt-3 ml-1 self-start">{getStatusText()}</Badge>
+        <Badge variant="" className="mt-3 ml-1 self-start">
+          {getStatusText()}
+        </Badge>
       )}
     </>
   );
-};
-
-export default SprintManager;
+}
