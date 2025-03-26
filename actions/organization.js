@@ -17,7 +17,7 @@ export async function getOrganization(slug) {
     throw new Error("User not found");
   }
 
-  // Get the organization details
+  // Get the organization details (Corrected)
   const organization = await clerkClient().organizations.getOrganization({
     slug,
   });
@@ -26,13 +26,13 @@ export async function getOrganization(slug) {
     return null;
   }
 
-  // Check if user belongs to this organization
-  const { data: membership } =
+  // Get organization membership list (Corrected)
+  const membershipList =
     await clerkClient().organizations.getOrganizationMembershipList({
       organizationId: organization.id,
     });
 
-  const userMembership = membership.find(
+  const userMembership = membershipList.data.find(
     (member) => member.publicUserData.userId === userId
   );
 
@@ -41,5 +41,6 @@ export async function getOrganization(slug) {
     return null;
   }
 
-  return organization;
+  // Convert organization to a plain object to prevent Next.js errors
+  return JSON.parse(JSON.stringify(organization));
 }

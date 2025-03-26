@@ -1,32 +1,36 @@
 "use client";
+
+import { usePathname } from "next/navigation";
 import {
   OrganizationSwitcher,
   SignedIn,
   useOrganization,
   useUser,
 } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
-import React from "react";
 
 const OrgSwitcher = () => {
   const { isLoaded } = useOrganization();
   const { isLoaded: isUserLoaded } = useUser();
   const pathname = usePathname();
 
+  if (pathname === "/") {
+    return null;
+  }
+
   if (!isLoaded || !isUserLoaded) {
     return null;
   }
 
   return (
-    <div>
+    <div className="flex justify-end mt-1">
       <SignedIn>
         <OrganizationSwitcher
           hidePersonal
-          afterCreateOrganizationUrl="/organization/:slug"
-          afterSelectOrganizationUrl="organization/:slug"
           createOrganizationMode={
             pathname === "/onboarding" ? "navigation" : "modal"
           }
+          afterCreateOrganizationUrl="/organization/:slug"
+          afterSelectOrganizationUrl="/organization/:slug"
           createOrganizationUrl="/onboarding"
           appearance={{
             elements: {
