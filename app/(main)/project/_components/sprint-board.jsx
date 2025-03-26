@@ -7,7 +7,7 @@ const SprintBoard = ({ sprints, projectId, orgId }) => {
     sprints.find((spr) => spr.status === "ACTIVE") || sprints[0]
   );
   return (
-    <div>
+    <div className="flex flex-col">
       {/* Sprint Manager */}
       <SprintManager
         sprint={currentSprint}
