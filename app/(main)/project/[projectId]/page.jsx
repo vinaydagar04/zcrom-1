@@ -3,7 +3,7 @@ import React from "react";
 import SprintCreationForm from "../_components/create-sprint";
 
 const ProjectPage = async ({ params }) => {
-  const { projectId } = params;
+  const { projectId } = await params;
   const project = await getProject(projectId);
 
   if (!project) {
@@ -21,6 +21,15 @@ const ProjectPage = async ({ params }) => {
       />
 
       {/* Sprint Board */}
+      {project.sprints.length > 0 ? (
+        <SprintBoard
+          sprints={project.sprints}
+          projectId={projectId}
+          orgId={project.organizationId}
+        />
+      ) : (
+        <div>Create a Sprint from Button above</div>
+      )}
     </div>
   );
 };
