@@ -8,8 +8,14 @@ import { projectSchema } from "@/app/lib/validators";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import useFetch from "@/hooks/use-fetch";
+import { createProject } from "@/actions/project";
+import { useRouter } from "next/navigation";
+import { BarLoader } from "react-spinners";
+import { toast } from "sonner";
 
-const CreateProjectPage = () => {
+export default function CreateProjectPage() {
+  const router = useRouter();
   const { isLoaded: isOrgLoaded, membership } = useOrganization();
   const { isLoaded: isUserLoaded } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -27,11 +33,31 @@ const CreateProjectPage = () => {
       setIsAdmin(membership.role === "org:admin");
     }
   }, [isOrgLoaded, isUserLoaded, membership]);
+
+  const {
+    loading,
+    error,
+    data: project,
+    fn: createProjectFn,
+  } = useFetch(createProject);
+
+  const onSubmit = async (data) => {
+    if (!isAdmin) {
+      alert("Only organization admins can create projects");
+      return;
+    }
+
+    createProjectFn(data);
+  };
+
+  useEffect(() => {
+    if (project) router.push(`/project/${project.id}`);
+  }, [loading]);
+
   if (!isOrgLoaded || !isUserLoaded) {
     return null;
   }
 
-  const onSubmit = async () => {};
   if (!isAdmin) {
     return (
       <div className="flex flex-col gap-2 items-center">
@@ -48,16 +74,17 @@ const CreateProjectPage = () => {
       <h1 className="text-6xl text-center font-bold mb-8 gradient-title">
         Create New Project
       </h1>
+
       <form
-        className="flex flex-col space-y-4"
         onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col space-y-4"
       >
         <div>
           <Input
             id="name"
+            {...register("name")}
             className="bg-slate-950"
             placeholder="Project Name"
-            {...register("name")}
           />
           {errors.name && (
             <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
@@ -66,9 +93,9 @@ const CreateProjectPage = () => {
         <div>
           <Input
             id="key"
-            className="bg-slate-950"
-            placeholder="Project Name"
             {...register("key")}
+            className="bg-slate-950"
+            placeholder="Project Key (Ex: RCYT)"
           />
           {errors.key && (
             <p className="text-red-500 text-sm mt-1">{errors.key.message}</p>
@@ -76,10 +103,10 @@ const CreateProjectPage = () => {
         </div>
         <div>
           <Textarea
-            id="key"
-            className="bg-slate-950"
-            placeholder="Project Name"
+            id="description"
             {...register("description")}
+            className="bg-slate-950 h-28"
+            placeholder="Project Description"
           />
           {errors.description && (
             <p className="text-red-500 text-sm mt-1">
@@ -87,12 +114,19 @@ const CreateProjectPage = () => {
             </p>
           )}
         </div>
-        <Button type="submit" size="lg" className="bg-blue-500 text-white">
-          Create Project
+        {loading && (
+          <BarLoader className="mb-4" width={"100%"} color="#36d7b7" />
+        )}
+        <Button
+          type="submit"
+          size="lg"
+          disabled={loading}
+          className="bg-blue-500 text-white"
+        >
+          {loading ? "Creating..." : "Create Project"}
         </Button>
+        {error && <p className="text-red-500 mt-2">{error.message}</p>}
       </form>
     </div>
   );
-};
-
-export default CreateProjectPage;
+}
