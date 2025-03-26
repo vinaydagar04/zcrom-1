@@ -1,14 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import { getOrganization } from "@/actions/organization";
+import OrgSwitcher from "@/components/org-switcher";
+import React from "react";
 
-export default async function OrganizationPage({ params }) {
-  const { orgId } = await params; // ✅ Removed unnecessary `await`
-  console.log("Received orgId:", orgId);
-
-  const { userId } = auth();
-
+const Organization = async ({ params }) => {
+  const { orgId } = await params;
   const organization = await getOrganization(orgId);
-  console.log("Final organization data:", organization);
 
   if (!organization) {
     return <div>Organization not found</div>;
@@ -20,7 +16,13 @@ export default async function OrganizationPage({ params }) {
         <h1 className="text-5xl font-bold gradient-title pb-2">
           {organization.name}&rsquo;s Projects
         </h1>
+        {/* ord switcher */}
+        <OrgSwitcher />
       </div>
+      <div className="mb-4">Show org projects</div>
+      <div className="mt-8">Show user assigned and reported issues here</div>
     </div>
   );
-}
+};
+
+export default Organization;
