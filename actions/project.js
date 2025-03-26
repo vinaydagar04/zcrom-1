@@ -70,3 +70,22 @@ export async function getProjects(orgId) {
   });
   return projects;
 }
+
+export async function deleteProject(projectId) {
+  const { userId, orgId, orgRole } = auth();
+
+  if (!userId || !orgId) {
+    throw new Error("Unauthorized");
+  }
+
+  if (orgRole !== "org:admin") {
+    throw new Error("Only organization value admins can delete projects");
+  }
+
+  await db.project.delete({
+    where: {
+      id: projectId,
+    },
+  });
+  return { success: true };
+}
