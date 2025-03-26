@@ -11,3 +11,9 @@ export const projectSchema = z.object({
     .max(10, "Project key is too long"),
   description: z.string().max(500, "Description is too long").optional(),
 });
+
+export const sprintSchema = z.object({
+  name: z.string().min(1, "Sprint name is required"),
+  startDate: z.date(),
+  endDate: z.date(),
+});
