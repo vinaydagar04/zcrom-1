@@ -171,6 +171,7 @@ const SprintBoard = ({ sprints, projectId, orgId }) => {
                           key={issue.id}
                           draggableId={issue.id}
                           index={index}
+                          isDragDisabled={updateIssuesLoading}
                         >
                           {(provided) => {
                             return (
