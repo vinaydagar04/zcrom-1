@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import IssueCreationDrawer from "./create-issue";
 import useFetch from "@/hooks/use-fetch";
-import { getIssuesForSprint } from "@/actions/issues";
+import { getIssuesForSprint, updateIssueOrder } from "@/actions/issues";
 import { BarLoader } from "react-spinners";
 import IssueCard from "@/components/issue-card";
 import { toast } from "sonner";
@@ -52,6 +52,13 @@ const SprintBoard = ({ sprints, projectId, orgId }) => {
   const handleIssueCreated = () => {
     fetchIssues(currentSprint.id);
   };
+
+  const {
+    fn: updateIssueOrderFn,
+    loading: updateIssuesLoading,
+    error: updateIssueError,
+  } = useFetch(updateIssueOrder);
+
   const onDragEnd = async (result) => {
     if (currentSprint.status === "PLANNED") {
       toast.warning("Start the sprint to update board");
@@ -118,7 +125,7 @@ const SprintBoard = ({ sprints, projectId, orgId }) => {
     const sortedIssues = newOrderedData.sort((a, b) => a.order - b.order);
     setIssues(newOrderedData, sortedIssues);
 
-    // updateIssueOrder(sortedIssues);
+    updateIssueOrderFn(sortedIssues);
   };
 
   if (issuesError) return <div>Error loading issues</div>;
@@ -132,7 +139,11 @@ const SprintBoard = ({ sprints, projectId, orgId }) => {
         sprints={sprints}
         projectId={projectId}
       />
-      {issuesLoading && (
+      {updateIssueError && (
+        <p className="text-red-500 mt-2">{updateIssueError.message}</p>
+      )}
+
+      {(updateIssuesLoading || issuesLoading) && (
         <BarLoader className="mt-4" width={"100%"} color="#36d7b7" />
       )}
 
