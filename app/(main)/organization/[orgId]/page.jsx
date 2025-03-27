@@ -2,9 +2,18 @@ import { getOrganization } from "@/actions/organization";
 import OrgSwitcher from "@/components/org-switcher";
 import ProjectList from "@/components/project-list";
 import React from "react";
+import UserIssues from "./_components/user-issues";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
-const Organization = async ({ params }) => {
+export default async function OrganizationPage({ params }) {
   const { orgId } = await params;
+  const { userId } = auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
   const organization = await getOrganization(orgId);
 
   if (!organization) {
@@ -17,15 +26,15 @@ const Organization = async ({ params }) => {
         <h1 className="text-5xl font-bold gradient-title pb-2">
           {organization.name}&rsquo;s Projects
         </h1>
-        {/* ord switcher */}
+
         <OrgSwitcher />
       </div>
       <div className="mb-4">
         <ProjectList orgId={organization.id} />
       </div>
-      <div className="mt-8">Show user assigned and reported issues here</div>
+      <div className="mt-8">
+        <UserIssues userId={userId} />
+      </div>
     </div>
   );
-};
-
-export default Organization;
+}
