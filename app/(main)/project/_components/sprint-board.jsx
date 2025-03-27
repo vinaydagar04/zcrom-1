@@ -11,6 +11,8 @@ import { getIssuesForSprint, updateIssueOrder } from "@/actions/issues";
 import { BarLoader } from "react-spinners";
 import IssueCard from "@/components/issue-card";
 import { toast } from "sonner";
+import { setDayOfYear } from "date-fns";
+import BoardFilters from "./board-filters";
 
 function reorder(list, startIndex, endIndex) {
   const result = Array.from(list);
@@ -43,6 +45,10 @@ const SprintBoard = ({ sprints, projectId, orgId }) => {
   }, []);
 
   const [filteredIssues, setFilteredIssues] = useState(issues);
+
+  const handleFilterChange = (newFilteredIssues) => {
+    setFilteredIssues(newFilteredIssues);
+  };
 
   const handleAddIssue = (status) => {
     setSelectedStatus(status);
@@ -139,6 +145,10 @@ const SprintBoard = ({ sprints, projectId, orgId }) => {
         sprints={sprints}
         projectId={projectId}
       />
+
+      {issues && !issuesLoading && (
+        <BoardFilters issues={issues} onFilterChange={handleFilterChange} />
+      )}
       {updateIssueError && (
         <p className="text-red-500 mt-2">{updateIssueError.message}</p>
       )}
@@ -164,7 +174,7 @@ const SprintBoard = ({ sprints, projectId, orgId }) => {
                     </h3>
 
                     {/* Issues */}
-                    {issues
+                    {filteredIssues
                       ?.filter((issue) => issue.status === column.key)
                       .map((issue, index) => (
                         <Draggable
