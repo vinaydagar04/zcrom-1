@@ -10,6 +10,7 @@ import { Badge } from "./ui/badge";
 import UserAvatar from "./user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
+import IssueDetailsDialog from "./issue-details-dialog";
 
 const priorityColor = {
   LOW: "border-green-600",
@@ -44,22 +45,24 @@ const IssueCard = ({
   return (
     <>
       <Card
-        className="cursor-pointer hover:shadow-md transition-shadow"
+        className={`border-t-2 ${
+          priorityColor[issue.priority]
+        } rounded-lg cursor-pointer hover:shadow-md transition-shadow`}
         onClick={() => setIsDialogOpen(true)}
       >
-        <CardHeader
-          className={`border-t-2 ${priorityColor[issue.priority]} rounded-lg`}
-        >
+        <CardHeader>
           <CardTitle>{issue.title}</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-2 mt-3">
+
+        <CardContent className="flex gap-2 -mt-3">
           {showStatus && <Badge>{issue.status}</Badge>}
           <Badge variant="outline" className="-ml-1">
             {issue.priority}
           </Badge>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col items-start space-y-3">
           <UserAvatar user={issue.assignee} />
+
           <div className="text-xs text-gray-400 w-full">Created {created}</div>
         </CardFooter>
       </Card>
