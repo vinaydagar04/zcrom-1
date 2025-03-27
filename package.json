@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+     "vercel-build": "prisma generate && next build"
+    
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
